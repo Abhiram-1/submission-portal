@@ -1,4 +1,3 @@
-# main.py
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pymongo import MongoClient
@@ -9,29 +8,21 @@ from typing import List, Optional
 import secrets
 import logging
 
-# Set up logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-# MongoDB setup
 client = MongoClient('mongodb://localhost:27017/')
 db = client['local']
 collection = db['submission']
 
-# Check MongoDB connection
 try:
     client.admin.command('ping')
     logger.info("Successfully connected to MongoDB!")
 except Exception as e:
     logger.error(f"Failed to connect to MongoDB: {e}")
 
-# FastAPI app setup
 app = FastAPI()
-
-# Basic auth setup
 security = HTTPBasic()
-
-# Pydantic models
 class User(BaseModel):
     username: str
     password: str
@@ -44,7 +35,6 @@ class Assignment(BaseModel):
     status: str = "pending"
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
-# Helper functions
 def get_user(username: str):
     logger.debug(f"Attempting to retrieve user: {username}")
     user = collection.find_one({"username": username})
@@ -69,8 +59,6 @@ async def get_current_user(credentials: HTTPBasicCredentials = Depends(security)
         logger.warning(f"Invalid authentication attempt for user: {credentials.username}")
         raise HTTPException(status_code=401, detail="Invalid username or password")
     return user
-
-# Endpoints
 @app.post("/register")
 async def register_user(user: User):
     logger.info(f"Received registration request for user: {user.username}")
